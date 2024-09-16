@@ -1,6 +1,11 @@
 #include <iostream>
+#include <string>
+#include "lab.h"
 
 int main(){
-    std::cout<<"Hello world!";
+    std::string line;
+    std::getline(std::cin, line);
+    int16_t count = couting_vowels(line);
+    std::cout << count << std::endl;
     return 0;
 }
