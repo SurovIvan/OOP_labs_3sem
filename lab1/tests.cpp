@@ -10,7 +10,7 @@ TEST(test_01, basic_test_set)
 TEST(test_02, basic_test_set)
 {
     ASSERT_TRUE(couting_vowels("LGDsgsgg")==0);
-
+}
 
 TEST(test_03, basic_test_set)
 {
