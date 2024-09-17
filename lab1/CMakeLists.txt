@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=maybe-uninitialized")
 
-add_library(${CMAKE_PROJECT_NAME}_lib lab.cpp)
+add_library(${CMAKE_PROJECT_NAME}_lib src/lab.cpp)
 add_executable(main main.cpp)
 
 target_link_libraries(main PRIVATE ${CMAKE_PROJECT_NAME}_lib)
@@ -24,7 +24,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(tests tests.cpp)
+add_executable(tests tests/tests.cpp)
 target_link_libraries(tests ${CMAKE_PROJECT_NAME}_lib gtest_main)
 
 add_test(NAME MyProjectTests COMMAND tests)

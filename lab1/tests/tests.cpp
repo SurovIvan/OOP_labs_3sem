@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "lab.h"
+#include "../src/lab.h"
 #include <string>
 
 TEST(test_01, basic_test_set)

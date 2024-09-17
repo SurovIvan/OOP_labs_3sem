@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "lab.h"
+#include "src/lab.h"
 
 int main(){
     std::string line;
