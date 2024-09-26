@@ -117,9 +117,9 @@ TEST(TwelveTest, ComparisonDifferentSizes) {
 
 // Тестирование сложения разных размеров
 TEST(TwelveTest, AdditionDifferentSizes) {
-    Twelve t1("B");    // 11
-    Twelve t2("1");    // 1
-    Twelve result = t1 + t2; // 11 + 1 = 12 -> "0", "1"
+    Twelve t1("B");    
+    Twelve t2("1");    
+    Twelve result = t1 + t2; 
     EXPECT_EQ(result.size(), 2);
     EXPECT_EQ(result[0], '0');
     EXPECT_EQ(result[1], '1');

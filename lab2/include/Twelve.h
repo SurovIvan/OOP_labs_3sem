@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
-
+#include <stdexcept>
 
 class Twelve
 {
@@ -32,7 +32,7 @@ class Twelve
         bool operator<(const Twelve& other) const;
         bool operator>(const Twelve& other) const;
         size_t size();
-        unsigned char operator[](const int16_t& index);
+        unsigned char operator[](const int16_t& index) const;
 
         ~Twelve() noexcept;
     

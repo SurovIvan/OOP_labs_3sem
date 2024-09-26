@@ -5,8 +5,17 @@ Twelve::Twelve(): _size{0}, _array{nullptr} {}
 Twelve::Twelve(const std::string& number) {
     _size = 0;
     _array = new unsigned char[number.size()];
-    for (auto &el: number)
-        this->_array[this->_size++] = el;
+    try {
+        for (auto &el: number) {
+            if (alphabet.find(el) == std::string::npos) {
+                throw std::invalid_argument("Invalid character in input string");
+            }
+            this->_array[this->_size++] = el;
+        }
+    } catch (...) {
+        delete [] _array;
+        throw;
+    }
 }
 
 Twelve::Twelve(const size_t& size) {
@@ -31,8 +40,16 @@ Twelve::Twelve(Twelve&& other) noexcept {
 Twelve::Twelve(std::initializer_list<unsigned char> &t) {
     _size = 0;
     _array = new unsigned char[t.size()];
-    for (auto &el: t) {
-        _array[_size++] = el;
+    try {
+        for (auto &el: t) {
+            if (alphabet.find(el) == std::string::npos) {
+                throw std::invalid_argument("Invalid character in input string");
+            }
+            this->_array[this->_size++] = el;
+        }
+    } catch (...) {
+        delete [] _array;
+        throw;
     }
 }
 
@@ -51,7 +68,10 @@ size_t Twelve::size() {
     return this->_size;
 }
 
-unsigned char Twelve::operator[](const int16_t& index) {
+unsigned char Twelve::operator[](const int16_t& index) const {
+    if (index >= this->_size) {
+        throw std::out_of_range("Index is out of bounds");;
+    }
     return this->_array[index];
 }
 
