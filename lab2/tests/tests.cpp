@@ -133,3 +133,11 @@ TEST(TwelveTest, SubtractionEqualNumbers) {
     EXPECT_EQ(result.size(), 1);
     EXPECT_EQ(result[0], '0');
 }
+
+TEST(TwelveTest, OutputOperatorTest) {
+    Twelve obj("12345");
+    std::ostringstream output; // Создаем поток для захвата вывода
+    output << obj;
+    std::string expectedOutput = "12345";
+    EXPECT_EQ(output.str(), expectedOutput);
+}

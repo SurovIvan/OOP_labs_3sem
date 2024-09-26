@@ -214,6 +214,18 @@ bool Twelve::operator>(const Twelve& other) const{
     return other < *this;
 }
 
+std::ostream& operator<<(std::ostream& os, const Twelve& num) {
+    if (num._array == nullptr || num._size == 0) {
+        os << "<Empty>";
+    } 
+    else {
+        for (size_t i = 0; i < num._size; ++i) {
+        os << num._array[i];
+        }
+    }
+    return os;
+}
+
 void Twelve::reallocate(size_t new_size) {
     unsigned char* new_array = new unsigned char[new_size];
     size_t min_size = std::min(this->_size, new_size);

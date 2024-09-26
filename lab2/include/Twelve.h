@@ -33,6 +33,7 @@ class Twelve
         bool operator>(const Twelve& other) const;
         size_t size();
         unsigned char operator[](const int16_t& index) const;
+        friend std::ostream& operator<<(std::ostream& os, const Twelve& num);
 
         ~Twelve() noexcept;
     
