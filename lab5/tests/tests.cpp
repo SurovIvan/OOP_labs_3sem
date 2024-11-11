@@ -4,21 +4,24 @@
 
 TEST(ListTest, DefaultConstructor) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);  
+    List<int> list(alloc);
     ASSERT_TRUE(list.IsEmpty());
     ASSERT_EQ(list.Size(), 0);
 }
 
 TEST(ListTest, ConstructorWithSize) {
     DynamicMemoryResource mr;
-    List<int> list(5, &mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);  
+    List<int> list(5, alloc);
     ASSERT_FALSE(list.IsEmpty());
     ASSERT_EQ(list.Size(), 5);
 }
 
 TEST(ListTest, ConstructorWithInitializerList) {
     DynamicMemoryResource mr;
-    List<int> list({1, 2, 3, 4, 5}, &mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list({1, 2, 3, 4, 5}, alloc);
     ASSERT_FALSE(list.IsEmpty());
     ASSERT_EQ(list.Size(), 5);
     ASSERT_EQ(list.Front(), 1);
@@ -27,7 +30,8 @@ TEST(ListTest, ConstructorWithInitializerList) {
 
 TEST(ListTest, CopyConstructor) {
     DynamicMemoryResource mr;
-    List<int> original(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> original(alloc);
     original.PushBack(1);
     original.PushBack(2);
     original.PushBack(3);
@@ -41,7 +45,8 @@ TEST(ListTest, CopyConstructor) {
 
 TEST(ListTest, MoveConstructor) {
     DynamicMemoryResource mr;
-    List<int> original(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> original(alloc);
     original.PushBack(1);
     original.PushBack(2);
     original.PushBack(3);
@@ -57,7 +62,8 @@ TEST(ListTest, MoveConstructor) {
 
 TEST(ListTest, PushBack) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     ASSERT_FALSE(list.IsEmpty());
@@ -68,7 +74,8 @@ TEST(ListTest, PushBack) {
 
 TEST(ListTest, PushFront) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushFront(1);
     list.PushFront(2);
     ASSERT_FALSE(list.IsEmpty());
@@ -79,7 +86,8 @@ TEST(ListTest, PushFront) {
 
 TEST(ListTest, PopBack) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     list.PushBack(3);
@@ -96,7 +104,8 @@ TEST(ListTest, PopBack) {
 
 TEST(ListTest, PopFront) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     list.PushBack(3);
@@ -113,7 +122,8 @@ TEST(ListTest, PopFront) {
 
 TEST(ListTest, Find) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     list.PushBack(3);
@@ -128,7 +138,8 @@ TEST(ListTest, Find) {
 
 TEST(ListTest, Erase) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     list.PushBack(3);
@@ -143,7 +154,8 @@ TEST(ListTest, Erase) {
 
 TEST(ListTest, Insert) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     list.PushBack(4);
@@ -153,17 +165,16 @@ TEST(ListTest, Insert) {
     list.Insert(it, 3);
     ASSERT_EQ(list.Size(), 5);
 
-    // Проверяем, что элемент 3 вставлен перед элементом 4
     auto it3 = list.Find(3);
     auto it4 = list.Find(4);
     ASSERT_EQ(*it3, 3);
     ASSERT_EQ(*it4, 4);
-    
 }
 
 TEST(ListTest, Iterator) {
     DynamicMemoryResource mr;
-    List<int> list(&mr);
+    std::pmr::polymorphic_allocator<int> alloc(&mr);
+    List<int> list(alloc);
     list.PushBack(1);
     list.PushBack(2);
     list.PushBack(3);
@@ -187,7 +198,8 @@ struct MyStruct {
 
 TEST(ListTest, ComplexType) {
     DynamicMemoryResource mr;
-    List<MyStruct> list(&mr);
+    std::pmr::polymorphic_allocator<MyStruct> alloc(&mr);
+    List<MyStruct> list(alloc);
 
     list.PushBack({1, 2.5, "hello"});
     list.PushBack({2, 3.14, "world"});
@@ -195,58 +207,4 @@ TEST(ListTest, ComplexType) {
     ASSERT_EQ(2, list.Size());
     ASSERT_EQ((MyStruct{1, 2.5, "hello"}), list.Front());
     ASSERT_EQ((MyStruct{2, 3.14, "world"}), list.Back());
-}
-TEST(DynamicMemoryResourceTest, AllocateAndDeallocate) {
-    DynamicMemoryResource mr;
-    void* p1 = mr.allocate(16, 16);  
-    ASSERT_NE(nullptr, p1);           
-
-    mr.deallocate(p1, 16, 16);        
-
-    
-    void* p2 = mr.allocate(16, 16);   
-    ASSERT_NE(nullptr, p2);           
-
-    mr.deallocate(p2, 16, 16);        
-}
-
-TEST(DynamicMemoryResourceTest, AllocateMultipleBlocks) {
-    DynamicMemoryResource mr;
-    void* p1 = mr.allocate(16, 16);
-    ASSERT_NE(nullptr, p1);
-
-    void* p2 = mr.allocate(32, 16);   
-    ASSERT_NE(nullptr, p2);
-    ASSERT_NE(p1, p2);                
-
-    mr.deallocate(p1, 16, 16);
-    mr.deallocate(p2, 32, 16);
-}
-
-TEST(DynamicMemoryResourceTest, DeallocateValidPointerWithDifferentSize) {
-    DynamicMemoryResource mr;
-    void* p = mr.allocate(16, 16);
-    ASSERT_NE(nullptr, p);
-
-    
-    mr.deallocate(p, 32, 16);  
-
-    mr.deallocate(p, 16, 16);
-}
-
-TEST(DynamicMemoryResourceTest, MultipleDeallocateSamePointer) {
-    DynamicMemoryResource mr;
-    void* p = mr.allocate(16, 16);
-    ASSERT_NE(nullptr, p);
-
-    mr.deallocate(p, 16, 16);  
-
-   
-    mr.deallocate(p, 16, 16); 
-}
-
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }

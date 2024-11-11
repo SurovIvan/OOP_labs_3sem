@@ -10,8 +10,7 @@ template<typename T, typename Allocator = std::pmr::polymorphic_allocator<T>>
     requires std::is_default_constructible_v<T> && std::is_same_v<Allocator, std::pmr::polymorphic_allocator<T>>
 class List {
 private:
-    class Node {
-    public:
+    struct Node {
         T value_;
         Node* prev_;
         Node* next_;
@@ -65,39 +64,39 @@ public:
         friend class List;
     };
 
-    List(std::pmr::memory_resource* mr = std::pmr::get_default_resource()) : alloc_(mr), head_(nullptr), tail_(nullptr), sz_(0) {}
+    List(Allocator alloc = Allocator{}) 
+        : alloc_(alloc), head_(nullptr), tail_(nullptr), sz_(0) {}
 
-    List(size_t sz, std::pmr::memory_resource* mr = std::pmr::get_default_resource()) : List(mr) {
+    List(size_t sz, Allocator alloc = Allocator{}) 
+        : List(alloc) {
         for (size_t i = 0; i < sz; ++i) {
-            this->PushBack(T());
+            PushBack(T());
         }
     }
 
-    List(const std::initializer_list<T>& items, std::pmr::memory_resource* mr = std::pmr::get_default_resource()) : List(mr) {
-        for (auto& item : items) {
-            this->PushBack(item);
+    List(const std::initializer_list<T>& items, Allocator alloc = Allocator{}) 
+        : List(alloc) {
+        for (const auto& item : items) {
+            PushBack(item);
         }
     }
 
-    List(const List& other) : List(other.alloc_.resource()) {
-        for (auto item = other.begin(); item != other.end(); ++item) {
-            this->PushBack(*item);
+    List(const List& other) 
+        : List(other.alloc_) {
+        for (const auto& item : other) {
+            PushBack(item);
         }
     }
 
-    List(List&& other) noexcept : alloc_(std::move(other.alloc_)), head_(other.head_), tail_(other.tail_), sz_(other.sz_) {
+    List(List&& other) noexcept 
+        : alloc_(std::move(other.alloc_)), head_(other.head_), tail_(other.tail_), sz_(other.sz_) {
         other.head_ = nullptr;
         other.tail_ = nullptr;
         other.sz_ = 0;
     }
 
     ~List() {
-        while (head_) {
-            Node* next = head_->next_;
-            NodeAllocatorTraits::destroy(alloc_, head_);
-            NodeAllocatorTraits::deallocate(alloc_, head_, 1);
-            head_ = next;
-        }
+        clear();
     }
 
     ListIterator begin() const noexcept {
@@ -125,55 +124,47 @@ public:
     }
 
     ListIterator Find(const T& value) const {
-        if (this->IsEmpty()) {
-            return this->end();
-        }
-        for (auto item = this->begin(); item != this->end(); ++item) {
-            if (*item == value) {
-                return item;
+        for (auto it = begin(); it != end(); ++it) {
+            if (*it == value) {
+                return it;
             }
         }
-        return this->end();
+        return end();
     }
 
     void Erase(ListIterator pos) {
         Node* cur_node = pos.node_;
-        if (this->IsEmpty()) {
-            return;
-        } else if (cur_node == head_) {
-            this->PopFront();
+        if (cur_node == head_) {
+            PopFront();
         } else if (cur_node == tail_) {
-            this->PopBack();
+            PopBack();
         } else {
-            Node* next = cur_node->next_;
             Node* prev = cur_node->prev_;
-            NodeAllocatorTraits::destroy(alloc_, cur_node);
-            NodeAllocatorTraits::deallocate(alloc_, cur_node, 1);
-
-            next->prev_ = prev;
+            Node* next = cur_node->next_;
             prev->next_ = next;
-            sz_--;
+            next->prev_ = prev;
+            destroyNode(cur_node);
+            --sz_;
         }
     }
 
     void Insert(ListIterator pos, const T& value) {
         Node* cur_node = pos.node_;
         if (cur_node == head_) {
-            this->PushFront(value);
+            PushFront(value);
         } else {
-            Node* new_node = NodeAllocatorTraits::allocate(alloc_, 1);
-            NodeAllocatorTraits::construct(alloc_, new_node, value);
-            new_node->prev_ = cur_node->prev_;
+            Node* new_node = createNode(value);
+            Node* prev = cur_node->prev_;
+            new_node->prev_ = prev;
             new_node->next_ = cur_node;
-            cur_node->prev_->next_ = new_node;
+            prev->next_ = new_node;
             cur_node->prev_ = new_node;
-            sz_++;
+            ++sz_;
         }
     }
 
     void PushBack(const T& value) {
-        Node* new_node = NodeAllocatorTraits::allocate(alloc_, 1);
-        NodeAllocatorTraits::construct(alloc_, new_node, value);
+        Node* new_node = createNode(value);
         if (tail_) {
             tail_->next_ = new_node;
             new_node->prev_ = tail_;
@@ -185,8 +176,7 @@ public:
     }
 
     void PushFront(const T& value) {
-        Node* new_node = NodeAllocatorTraits::allocate(alloc_, 1);
-        NodeAllocatorTraits::construct(alloc_, new_node, value);
+        Node* new_node = createNode(value);
         if (head_) {
             head_->prev_ = new_node;
             new_node->next_ = head_;
@@ -198,42 +188,53 @@ public:
     }
 
     void PopBack() {
-        if (this->IsEmpty()) {
-            return;
-        } else if (head_ == tail_) {
-            NodeAllocatorTraits::destroy(alloc_, tail_);
-            NodeAllocatorTraits::deallocate(alloc_, tail_, 1);
+        if (!tail_) return;
+        if (head_ == tail_) {
+            destroyNode(tail_);
             head_ = tail_ = nullptr;
         } else {
             Node* tmp = tail_->prev_;
             tmp->next_ = nullptr;
-            NodeAllocatorTraits::destroy(alloc_, tail_);
-            NodeAllocatorTraits::deallocate(alloc_, tail_, 1);
+            destroyNode(tail_);
             tail_ = tmp;
         }
         --sz_;
     }
 
     void PopFront() {
-        if (this->IsEmpty()) {
-            return;
-        } else if (head_ == tail_) {
-            NodeAllocatorTraits::destroy(alloc_, tail_);
-            NodeAllocatorTraits::deallocate(alloc_, tail_, 1);
+        if (!head_) return;
+        if (head_ == tail_) {
+            destroyNode(head_);
             head_ = tail_ = nullptr;
         } else {
             Node* tmp = head_->next_;
             tmp->prev_ = nullptr;
-            NodeAllocatorTraits::destroy(alloc_, head_);
-            NodeAllocatorTraits::deallocate(alloc_, head_, 1);
+            destroyNode(head_);
             head_ = tmp;
         }
         --sz_;
     }
 
+    void clear() {
+        while (head_) {
+            PopFront();
+        }
+    }
+
 private:
     NodeAllocator alloc_;
-    Node* tail_;
     Node* head_;
+    Node* tail_;
     size_t sz_;
+
+    Node* createNode(const T& value) {
+        Node* node = NodeAllocatorTraits::allocate(alloc_, 1);
+        NodeAllocatorTraits::construct(alloc_, node, value);
+        return node;
+    }
+
+    void destroyNode(Node* node) {
+        NodeAllocatorTraits::destroy(alloc_, node);
+        NodeAllocatorTraits::deallocate(alloc_, node, 1);
+    }
 };
