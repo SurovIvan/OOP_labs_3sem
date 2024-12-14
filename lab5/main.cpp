@@ -1,7 +1,7 @@
 #include "include/list.hpp"
 #include "include/allocator.hpp"
 #include <iostream>
-#include <memory_resource>  // для работы с polymorphic_allocator
+#include <memory_resource> 
 
 struct my_struct {
     int age;
@@ -12,7 +12,6 @@ int main() {
     DynamicMemoryResource mem_resource;
     std::pmr::polymorphic_allocator<int> int_alloc(&mem_resource);
 
-    // Создаем список `int_list`, используя `polymorphic_allocator`
     List<int> int_list(int_alloc);
     int_list.PushBack(100);
     int_list.PushBack(111);
@@ -22,7 +21,6 @@ int main() {
     }
     std::cout << std::endl;
 
-    // Создаем аллокатор для `my_struct` и список `struct_list`
     std::pmr::polymorphic_allocator<my_struct> struct_alloc(&mem_resource);
     List<my_struct> struct_list(struct_alloc);
     struct_list.PushBack(my_struct{10, 35});
